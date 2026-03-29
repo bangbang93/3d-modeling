@@ -22,9 +22,6 @@ center_shaft_h = 25;    // mm  中心轴总高度（含底座段）
 // 限位杆参数
 limit_rod_d  = 6;       // mm  限位杆直径
 limit_rod_h  = 20;      // mm  限位杆高度（露出底座部分）
-stop_angle   = 90;      // °   限位杆相对 X+ 方向偏置角
-                        //     两根限位杆分别在 ±stop_angle 处
-                        //     默认 ±90° → 限位范围 0°–180°
 
 // 打印参数
 print_mode   = "pip";   // "parts" 分件打印 / "pip" 一体打印
@@ -56,6 +53,12 @@ module rounded_cuboid(lx, ly, lz, r) {
 // 限位杆中心到底座中心的距离（不超出底座边界）
 _limit_r = min(rod_length / 2,
                base_length / 2 - limit_rod_d / 2 - 1);
+
+// 限位角（自动计算）：使旋转杆恰好停在水平位置（0° 和 180°）
+//   _stop_angle = atan((rod_diameter/2 + limit_rod_d/2) / _limit_r)
+//   限位杆1 在 -_stop_angle   → 挡住杆在 0°（+X 水平）时的 -Y 边缘
+//   限位杆2 在 180°-_stop_angle → 挡住杆在 180°（-X 水平）时的 +Y 边缘
+_stop_angle = atan((rod_diameter / 2 + limit_rod_d / 2) / _limit_r);
 
 // 旋转杆套孔内径（rotating_rod 上的孔，套住中心轴）
 //   PIP：加间隙可旋转；分件：轻松滑配
@@ -106,7 +109,10 @@ module single_limit_rod() {
 //   对称布置在 ±stop_angle 处
 // ------------------------------------------------------------
 module limit_rods() {
-    for (a = [-stop_angle, stop_angle]) {
+    // 两根限位杆均在 0°–180° 行程范围的外侧：
+    //   杆1 在 -_stop_angle      → 0°（+X 水平）的 CW 外侧
+    //   杆2 在 180°+_stop_angle  → 180°（-X 水平）的 CCW 外侧
+    for (a = [-_stop_angle, 180 + _stop_angle]) {
         translate([
             _limit_r * cos(a),
             _limit_r * sin(a),
