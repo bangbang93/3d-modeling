@@ -139,20 +139,21 @@ module retaining_cap() {
 //   截面为圆角正方形（rod_diameter × rod_diameter）
 // ------------------------------------------------------------
 module rotating_rod() {
-    hub_d    = center_shaft_d + 8;          // hub 外径（包裹中心轴）
-    hub_h    = rod_diameter;                // hub 高度 = 杆截面高度，平躺打印不悬空
+    hub_d    = center_shaft_d + 8;           // hub 外径（包裹中心轴）
+    hub_h    = rod_diameter;                 // hub 高度 = 杆截面高度，平躺打印不悬空
     r_corner = max(1.0, rod_diameter * 0.2); // 圆角半径
 
-    rod_start  = hub_d / 2;                 // 杆体从 hub 边缘开始
-    rod_body_l = rod_length - rod_start;    // 杆体有效长度
+    // 杆体从 hub 内部开始，与 hub 有充分重叠，保证 union 连成一体
+    rod_body_x = hub_d / 2 - rod_diameter;  // 向 hub 内延伸一个杆宽
+    rod_body_l = rod_length - rod_body_x;   // 延伸到 x = rod_length 处
 
     difference() {
         union() {
             // 中心套筒（圆柱）
             cylinder(d = hub_d, h = hub_h, center = true);
 
-            // 单侧圆角长方体杆（向 +X 延伸）
-            translate([rod_start, 0, 0])
+            // 单侧圆角长方体杆（从 hub 内部向 +X 延伸，保证与 hub 充分重叠）
+            translate([rod_body_x, 0, 0])
                 rounded_cuboid(
                     rod_body_l,
                     rod_diameter,
