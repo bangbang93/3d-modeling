@@ -31,7 +31,7 @@ $fn            = 64;
 
 // 预览参数
 preview_angle = 45;     // °   装配预览时旋转杆的角度（0–180）
-show_assembly = true;   // true=装配预览 / false=打印排版
+show_assembly = false;   // true=装配预览 / false=打印排版
 
 // ===== 辅助模块 =====
 
